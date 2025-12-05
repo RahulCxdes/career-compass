@@ -1,0 +1,165 @@
+[
+"python","java","c","c++","cpp","c#","go","golang","rust","javascript",
+"typescript","node.js","ruby","php","perl","swift","kotlin","scala","r",
+"matlab","bash","shell scripting","powershell","objective-c","haskell",
+"elixir","erlang","clojure","dart","lua",
+"html","css","scss","sass","less",
+
+"data structures","algorithms","object oriented programming",
+"functional programming","asynchronous programming",
+"concurrency","multithreading","parallel programming",
+"microservices","microservices architecture","distributed systems",
+
+"json","yaml","xml","protobuf","avro","parquet",
+
+"clean code","design patterns","solid principles","refactoring",
+"unit testing","integration testing","test automation","mocking","tdd",
+"bdd","code review","version control",
+
+"rest api","rest apis","restful api","api development","api design",
+"graphql","grpc","soap",
+
+"http","https","tcp/ip","dns","ftp","websockets","mqtt","load balancing",
+
+"jwt","oauth","oauth2","api security","authentication","authorization"
+,
+"fastapi","django","flask","spring","spring boot","hibernate",
+"express","nestjs","laravel","rails","asp.net","dotnet core",
+
+"mysql","postgresql","sql","nosql","mongodb","redis","cassandra",
+"mariadb","oracle","sqlite","cockroachdb","dynamodb",
+"timescaledb","elasticsearch","opensearch","neo4j","influxdb",
+
+"database design","database indexing","query optimization",
+"stored procedures","views","triggers","orm","connection pooling",
+
+"caching","in-memory caching","redis caching","memcached",
+
+"message queues","queues","rabbitmq","kafka","activemq","sqs","pub/sub",
+
+"microservices orchestration","service discovery","service mesh",
+"rate limiting","circuit breaker","sidecar pattern",
+
+"serverless","lambda","cloud functions","api gateway",
+"docker","docker compose","kubernetes","k8s","helm","istio",
+"service mesh","ingress controller","nginx ingress","traefik",
+
+"ci/cd","ci cd","cicd","github actions","gitlab ci","jenkins",
+"bitbucket pipelines","azure pipelines","circleci",
+
+"build pipelines","deployment pipelines","artifact repository",
+"nexus","jfrog artifactory","versioning","semantic versioning",
+
+"linux","ubuntu","debian","centos","rhel","cron jobs",
+"systemd","log rotation","shell tools","ssh","scp","rsync",
+
+"terraform","infrastructure as code","ansible","chef","puppet",
+"cloudformation","packer","vault","consul",
+
+"aws","gcp","azure","cloud deployment","ec2","s3","rds",
+"cloudwatch","cloudfront","elb","autoscaling","iam",
+"vpc","subnets","cloud networking","route53",
+
+"gke","eks","aks","compute engine","storage buckets",
+
+"monitoring","logging","observability","prometheus","grafana",
+"elk stack","filebeat","metricbeat","datadog",
+"react","react.js","redux","next.js","vite","webpack","babel",
+"javascript dom","virtual dom","hooks","context api",
+
+"vue","vue.js","pinia","nuxt","svelte","sveltekit",
+"angular","rxjs","zone.js",
+
+"typescript types","interfaces","generics","decorators",
+
+"ui design","responsive design","material ui","chakra ui",
+"tailwind css","bootstrap","ant design",
+
+"web accessibility","semantic ui","cross-browser compatibility",
+"dom manipulation","event handling","api consumption",
+"frontend routing","state management","component design",
+
+"figma","adobe xd","wireframing","prototyping"
+,
+"machine learning","ml","deep learning","neural networks",
+"nlp","computer vision","reinforcement learning","classification",
+"regression","clustering","dimensionality reduction",
+
+"pandas","numpy","scikit-learn","tensorflow","keras","pytorch",
+"xgboost","lightgbm","catboost","spacy","opencv",
+
+"embedding models","transformers","bert","gpt","tokenization",
+"vector embeddings","similarity search","cosine similarity",
+
+"data preprocessing","data cleaning","data pipelines",
+"feature engineering","model evaluation","metrics",
+"cross validation","train test split",
+
+"hyperparameter tuning","grid search","bayesian optimization",
+
+"llm","rag","vector database","chroma","faiss","weaviate","pinecone",
+
+"natural language processing","topic modeling","ner",
+"sentiment analysis","summarization","translation",
+"penetration testing","vulnerability scanning","threat modeling",
+"secure coding","secure design","input validation",
+
+"owasp top 10","sql injection","xss","csrf","ssrf","cors",
+"encryption","hashing","ssl","tls","ssh security",
+
+"firewalls","waf","ids","ips","siem","sso","mfa",
+
+"network security","endpoint security","cloud security","identity management",
+"zero trust","iam","key rotation","data loss prevention",
+
+"jwt security","oauth2 security","api security best practices"
+,
+"etl","elt","data pipelines","airflow","luigi","prefect",
+
+"big data","hadoop","spark","pyspark","mapreduce",
+"hive","pig","hbase","kudu","flink","beam",
+
+"data modeling","data warehousing","dimensional modeling",
+"redshift","bigquery","snowflake","athena","data lake",
+
+"stream processing","batch processing","kinesis","pubsub"
+,
+"system design","high availability","scalability","load balancing",
+"horizontal scaling","vertical scaling","caching strategies",
+
+"api gateway","reverse proxy","nginx","haproxy",
+
+"event driven architecture","event sourcing","cqrs",
+"monolithic architecture","microservices architecture",
+
+"distributed transactions","sagas","orchestration","choreography",
+
+"fault tolerance","circuit breaker","health checks","service discovery"
+,
+"unit testing","integration testing","e2e testing","ui testing",
+"test automation","selenium","cypress","playwright",
+"postman","newman","load testing","jmeter","k6",
+
+"mocking frameworks","pytest","junit","mocha","chai",
+
+"bug tracking","jira","test case design","test strategy"
+,
+"communication","verbal communication","written communication",
+"presentation skills","public speaking",
+
+"leadership","team leadership","people management",
+"mentoring","delegation","decision making",
+
+"teamwork","collaboration","stakeholder communication",
+"client communication","customer communication",
+
+"sales","sales strategy","negotiation","customer handling",
+"client handling","requirement gathering",
+
+"analytical thinking","critical thinking","problem solving",
+"planning","task management","time management",
+
+"project management","agile","scrum","kanban"
+]
+
+

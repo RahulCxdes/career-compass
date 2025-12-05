@@ -1,0 +1,13 @@
+karthik m
+data scientist python pandas ml deep learning
+summary
+data scientist with experience in machine learning and analytics.
+skills
+python, pandas, numpy, scikit-learn, tensorflow, sql, matplotlib, data visualization
+experience
+ml intern built ml classification models and dashboards.
+projects
+image classifier using cnn
+sales forecasting using time series
+education
+be cse 8.7 cgpa

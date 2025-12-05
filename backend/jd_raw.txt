@@ -1,0 +1,15 @@
+full-stack developer (python + react)
+required:
+- python
+- django or fastapi
+- sql
+- react
+- git
+- apis
+preferred:
+- docker
+- aws
+- ci cd
+-devops
+-unity
+-flutter

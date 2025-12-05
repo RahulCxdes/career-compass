@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+env/
+venv/
+*.sqlite3
+
+# FastAPI Uploads or runtime files
+uploads/
+tmp/
+*.db
+*.bin
+
+# Node.js / React
+frontend/node_modules/
+frontend/build/
+frontend/dist/
+frontend/.env
+
+# OS / Editor
+.DS_Store
+Thumbs.db
