@@ -1,12 +1,11 @@
 # chat_retrieval.py
 from typing import Dict, List
-from langchain_core.documents import Document
 
 import memory_db
 from intent_detection import QueryTarget, target_for_retrieval
 
 from query_expansion import expand_query
-from reranker import rerank
+from hybrid_retrieval import hybrid_search
 
 
 def _docs_to_text(docs: List[str]) -> str:
@@ -14,35 +13,48 @@ def _docs_to_text(docs: List[str]) -> str:
 
 
 def retrieve_context_for_chat(query: str, k: int = 3) -> Dict[str, str]:
+    """
+    Retrieve resume/JD context for chat using:
+      - LLM query expansion
+      - Hybrid retrieval (BM25 + embeddings)
+      - Cross-encoder reranking
+    """
 
-    # 1️⃣ Query Expansion
+    # 1️⃣ Expand the query
     expanded_query = expand_query(query)
 
+    # 2️⃣ Decide target: resume / JD / both
     target = target_for_retrieval(query)
 
     resume_context = ""
     jd_context = ""
 
-    # 2️⃣ Retrieve & Rerank Resume Context
+    # 3️⃣ Resume context
     if target in (QueryTarget.RESUME, QueryTarget.BOTH):
-        if memory_db.resume_db:
-            raw_docs = memory_db.resume_db.similarity_search(expanded_query, k=20)
-
-            raw_texts = [d.page_content for d in raw_docs]
-
-            best_docs = rerank(expanded_query, raw_texts, top_k=k)
-
+        if getattr(memory_db, "resume_db", None):
+            best_docs = hybrid_search(
+                search_query=expanded_query,
+                db=memory_db.resume_db,
+                top_k=k,
+                bm25_k=20,
+                vec_k=20,
+                use_rerank=True,
+                section_filter=None,  # for now use all sections
+            )
             resume_context = _docs_to_text(best_docs)
 
-    # 3️⃣ Retrieve & Rerank JD Context
+    # 4️⃣ JD context
     if target in (QueryTarget.JD, QueryTarget.BOTH):
-        if memory_db.jd_db:
-            raw_docs = memory_db.jd_db.similarity_search(expanded_query, k=20)
-
-            raw_texts = [d.page_content for d in raw_docs]
-
-            best_docs = rerank(expanded_query, raw_texts, top_k=k)
-
+        if getattr(memory_db, "jd_db", None):
+            best_docs = hybrid_search(
+                search_query=expanded_query,
+                db=memory_db.jd_db,
+                top_k=k,
+                bm25_k=20,
+                vec_k=20,
+                use_rerank=True,
+                section_filter=None,
+            )
             jd_context = _docs_to_text(best_docs)
 
     return {

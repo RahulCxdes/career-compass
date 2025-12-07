@@ -1,109 +1,171 @@
+# ============================================================
 # chat_endpoint.py
-from fastapi import APIRouter, HTTPException
+# Fully optimized, history-aware RAG chat module
+# ============================================================
+
+from fastapi import APIRouter
 from pydantic import BaseModel
-from typing import Optional, List
-import json
-
-import os
 from groq import Groq
+import memory_db
+from hybrid_retrieval import hybrid_search
 
-from chat_retrieval import retrieve_context_for_chat
-from chat_prompt import CHAT_SYSTEM_PROMPT
-from chat_memory import get_history, append_turn
-import memory_db  # ✅ IMPORTANT: import memory db
+router = APIRouter()
 
-router = APIRouter(prefix="/api", tags=["chat"])
-
-
-# ---------- Models ----------
-class ChatRequest(BaseModel):
-    query: str
-    session_id: Optional[str] = None
+# -------------------------------
+# Conversation Memory in RAM
+# Only stores real messages
+# -------------------------------
+CHAT_HISTORY = []  # last 12 turns
 
 
-class ChatResponse(BaseModel):
-    answer: str
-    target: str
-    used_resume_context: bool
-    used_jd_context: bool
+# -------------------------------
+# Groq Client Helper
+# -------------------------------
+def get_client():
+    import os
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        raise RuntimeError("Missing GROQ_API_KEY")
+    return Groq(api_key=api_key)
 
 
-# ---------- LLM ----------
-_groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+# -------------------------------
+# Query Rewriter (History-Aware)
+# -------------------------------
+def rewrite_query(history, user_input):
+    """
+    Converts ambiguous queries into explicit ones.
+    Example:
+      user: "improve that"
+      → "improve the machine learning classification project in the resume"
+    """
+    client = get_client()
 
+    # Use only last 6 messages for context
+    convo = "\n".join([f"{m['role']}: {m['content']}" for m in history[-6:]])
 
-def call_chat_llm(system_prompt: str, history: List[dict], user_payload: dict):
+    prompt = f"""
+Rewrite the user's message into a clear, stand-alone search query.
+Use the conversation history to resolve pronouns or vague references.
 
-    messages = [{"role": "system", "content": system_prompt}]
-    messages.extend(history)
+Conversation History:
+{convo}
 
-    messages.append({
-        "role": "user",
-        "content": (
-            "Use ONLY the resume_context and jd_context provided here.\n"
-            "If information is missing, say 'Not enough information'.\n\n"
-            f"{json.dumps(user_payload, indent=2)}"
-        )
-    })
+User message:
+{user_input}
 
-    resp = _groq_client.chat.completions.create(
+Return ONLY the rewritten query. No explanations. No formatting.
+"""
+
+    resp = client.chat.completions.create(
         model="llama-3.1-8b-instant",
-        messages=messages,
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=60,
         temperature=0.2,
-        max_tokens=800
     )
-
     return resp.choices[0].message.content.strip()
 
 
+# -------------------------------
+# Chat Request Schema
+# -------------------------------
+class ChatRequest(BaseModel):
+    message: str
 
 
+# -------------------------------
+# MAIN CHAT ENDPOINT
+# -------------------------------
+@router.post("/chat")
+async def chat(req: ChatRequest):
+    global CHAT_HISTORY
 
-# ---------- Endpoint ----------
-@router.post("/chat", response_model=ChatResponse)
-async def chat_endpoint(payload: ChatRequest):
-    if not payload.query.strip():
-        raise HTTPException(400, "Query cannot be empty")
+    user_msg = req.message
+    CHAT_HISTORY.append({"role": "user", "content": user_msg})
 
-    # 1) VECTOR SEARCH
-    contexts = retrieve_context_for_chat(payload.query)
-    target = contexts["target"]
+    # -------------------------------------------------------
+    # STEP 1 — Rewrite Query using history (but DO NOT store)
+    # -------------------------------------------------------
+    rewritten = rewrite_query(CHAT_HISTORY, user_msg)
 
-    resume_context = contexts["resume_context"]
-    jd_context = contexts["jd_context"]
+    # -------------------------------------------------------
+    # STEP 2 — Retrieve context from Resume/JD DBs
+    # -------------------------------------------------------
+    resume_db = memory_db.resume_db
+    jd_db = memory_db.jd_db
 
-    # 2) SEND ALL DATA TO LLM (FIXED)
-    user_payload = {
-        "query": payload.query,
-        "target": target,
-        "resume_context": resume_context,
-        "jd_context": jd_context,
+    resume_chunks = []
+    jd_chunks = []
+
+    if resume_db:
+        resume_chunks = hybrid_search(
+            search_query=rewritten,
+            db=resume_db,
+            top_k=3,
+            use_rerank=True,
+        )
+
+    if jd_db:
+        jd_chunks = hybrid_search(
+            search_query=rewritten,
+            db=jd_db,
+            top_k=3,
+            use_rerank=True,
+        )
+
+    # Convert chunks to simple text blocks
+    resume_text = "\n".join(
+        [c["text"] if isinstance(c, dict) else str(c) for c in resume_chunks]
+    )
+    jd_text = "\n".join(
+        [c["text"] if isinstance(c, dict) else str(c) for c in jd_chunks]
+    )
+
+    # -------------------------------------------------------
+    # STEP 3 — Build final prompt for LLM
+    # -------------------------------------------------------
+    prompt = f"""
+You are a career assistant AI.
+
+Use ONLY the provided Resume Context and JD Context to answer the user's question.
+Do NOT hallucinate details not present in context.
+
+User Question:
+{user_msg}
+
+Rewritten Query (for retrieval):
+{rewritten}
+
+Resume Context:
+{resume_text or "NO RESUME CONTEXT FOUND"}
+
+JD Context:
+{jd_text or "NO JD CONTEXT FOUND"}
+"""
+
+    # -------------------------------------------------------
+    # STEP 4 — LLM Final Response
+    # -------------------------------------------------------
+    client = get_client()
+    resp = client.chat.completions.create(
+        model="llama-3.1-8b-instant",
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=300,
+        temperature=0.4,
+    )
+
+    answer = resp.choices[0].message.content.strip()
+
+    # Save assistant reply into chat history
+    CHAT_HISTORY.append({"role": "assistant", "content": answer})
+
+    # Keep history short
+    CHAT_HISTORY = CHAT_HISTORY[-12:]
+
+    # Frontend response
+    return {
+        "answer": answer,
+        "rewritten_query": rewritten,
+        "used_resume_context": resume_chunks,
+        "used_jd_context": jd_chunks,
     }
-
-
-
-    # 3) CHAT MEMORY
-    history = []
-    if payload.session_id:
-        for turn in get_history(payload.session_id):
-            history.append({"role": turn["role"], "content": turn["content"]})
-
-    # 4) CALL LLM
-    answer = call_chat_llm(
-        system_prompt=CHAT_SYSTEM_PROMPT,
-        history=history,
-        user_payload=user_payload
-    )
-
-    # 5) STORE CHAT MEMORY
-    if payload.session_id:
-        append_turn(payload.session_id, "user", payload.query)
-        append_turn(payload.session_id, "assistant", answer)
-
-    # 6) RETURN
-    return ChatResponse(
-        answer=answer,
-        target=target,
-        used_resume_context=bool(resume_context),
-        used_jd_context=bool(jd_context),
-    )

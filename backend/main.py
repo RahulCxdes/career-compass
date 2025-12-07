@@ -18,7 +18,8 @@ app = FastAPI()
 
 
 # app = FastAPI()
-app.include_router(chat_router)
+app.include_router(chat_router, prefix="/api")
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -31,22 +32,27 @@ app.add_middleware(
 
 # PDF extractor
 def extract_pdf_text(file: UploadFile):
-    content = file.file.read()  # read bytes once
+    content = file.file.read()
     pdf = fitz.open(stream=content, filetype="pdf")
     text = ""
+
     for page in pdf:
-        text += page.get_text("text")
+        text += page.get_text("text") + "\n"  # preserve newlines
 
     # Normalize C++ → cpp
     text = text.replace("C++", "cpp").replace("c++", "cpp")
 
-    # Remove isolated single garbage letters
-    text = re.sub(r"\b[a-zA-Z]\b", " ", text)
+    # Remove isolated garbage letters ONLY if surrounded by spaces
+    text = re.sub(r"(?<=\s)[a-zA-Z](?=\s)", " ", text)
 
-    # Normalize multiple spaces
-    text = re.sub(r"\s+", " ", text)
+    # SAFELY normalize spaces but preserve newlines
+    cleaned_lines = []
+    for line in text.split("\n"):
+        cleaned_lines.append(" ".join(line.split()))  # collapse spaces IN the line
 
-    return text
+    cleaned_text = "\n".join(cleaned_lines).strip()
+    return cleaned_text
+
 
 
 
