@@ -13,7 +13,8 @@ from langchain_chroma import Chroma
 from groq import Groq
 
 from similarity_score import compute_similarity_score
-from missing_skills import extract_resume_jd_skills
+# 🔥 removed old dictionary matcher:
+# from missing_skills import extract_resume_jd_skills
 
 from query_expansion import expand_query
 from hybrid_retrieval import hybrid_search
@@ -27,18 +28,6 @@ def get_groq_client() -> Groq:
     if not api_key:
         raise RuntimeError("❌ GROQ_API_KEY not set.")
     return Groq(api_key=api_key)
-
-
-# -----------------------------------------------------------
-# SIMPLE SKILL MATCHING (dictionary-based)
-# -----------------------------------------------------------
-def analyze_skills(resume_text: str, jd_text: str):
-    matched, missing, extra = extract_resume_jd_skills(resume_text, jd_text)
-    return {
-        "matched_skills": matched,
-        "missing_skills": missing,
-        "extra_skills": extra,
-    }
 
 
 # -----------------------------------------------------------
@@ -234,6 +223,106 @@ def _retrieve_weighted_jd_context(jd_db: Chroma) -> List[Dict[str, Any]]:
 
 
 # -----------------------------------------------------------
+# LLM-BASED SKILL EXTRACTION (RAG-GROUNDED)
+# -----------------------------------------------------------
+def extract_skills_with_llm(
+    resume_chunks: List[Dict[str, Any]],
+    jd_chunks: List[Dict[str, Any]],
+    model_name: str = "llama-3.1-8b-instant",
+) -> Dict[str, List[str]]:
+    """
+    Replaces the old dictionary-based skill matcher.
+
+    Uses ONLY the retrieved resume + JD chunks and asks the LLM to:
+      - find skills in JD
+      - find skills in Resume
+      - compute matched / missing / extra
+
+    Returns:
+      {
+        "matched_skills": [...],
+        "missing_skills": [...],
+        "extra_skills": [...]
+      }
+    """
+
+    client = get_groq_client()
+
+    prompt = f"""
+You are an ATS-grade Skill Extraction Assistant.
+
+You will receive:
+- RESUME_CONTEXT_CHUNKS: text snippets from a candidate's resume
+- JD_CONTEXT_CHUNKS: text snippets from a job description
+
+Your job is to:
+1. Identify individual SKILL NAMES from each side (technologies, tools, frameworks, libraries, languages, cloud platforms, etc.).
+2. Normalize them into short, lowercase names (e.g. "python", "react", "docker", "aws").
+3. Compute three sets:
+   - "matched_skills": skills clearly present in BOTH resume and JD.
+   - "missing_skills": skills required in JD but NOT clearly present in resume.
+   - "extra_skills": skills present in resume but NOT mentioned in JD.
+
+VERY IMPORTANT RULES:
+- Only include real skills (not soft phrases like "hardworking").
+- Keep each skill as a SHORT STRING (no sentences).
+- If unsure about a skill, leave it out.
+- If nothing is found for a set, return an empty list for that set.
+
+RESUME_CONTEXT_CHUNKS:
+{json.dumps(resume_chunks, indent=2, ensure_ascii=False)}
+
+JD_CONTEXT_CHUNKS:
+{json.dumps(jd_chunks, indent=2, ensure_ascii=False)}
+
+Now respond with ONLY valid JSON in this exact format:
+
+{{
+  "matched_skills": ["skill1", "skill2"],
+  "missing_skills": ["skill3"],
+  "extra_skills": ["skill4"]
+}}
+"""
+
+    resp = client.chat.completions.create(
+        model=model_name,
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=400,
+        temperature=0.1,
+    )
+
+    raw = resp.choices[0].message.content.strip()
+
+    # Try to robustly parse JSON
+    try:
+        # Sometimes LLM may wrap in ```json ... ```
+        if raw.startswith("```"):
+            raw = raw.strip("`")
+            # remove possible "json" label
+            if raw.lower().startswith("json"):
+                raw = raw[4:].strip()
+        data = json.loads(raw)
+    except Exception:
+        # Fallback: safe empty structure
+        data = {}
+
+    matched = data.get("matched_skills", []) or []
+    missing = data.get("missing_skills", []) or []
+    extra = data.get("extra_skills", []) or []
+
+    # Ensure they are lists of strings
+    matched = [str(s).strip() for s in matched if str(s).strip()]
+    missing = [str(s).strip() for s in missing if str(s).strip()]
+    extra = [str(s).strip() for s in extra if str(s).strip()]
+
+    return {
+        "matched_skills": matched,
+        "missing_skills": missing,
+        "extra_skills": extra,
+    }
+
+
+# -----------------------------------------------------------
 # LLM GAP ANALYSIS (RAG-GROUNDED)
 # -----------------------------------------------------------
 def generate_gap_analysis_with_llm(
@@ -246,13 +335,6 @@ def generate_gap_analysis_with_llm(
 ) -> str:
 
     client = get_groq_client()
-
-    prompt_payload = {
-        "similarity_score": similarity,
-        "match_score_0_10": match_score,
-        "resume_context_chunks": resume_chunks,
-        "jd_context_chunks": jd_chunks,
-    }
 
     prompt = f"""
 You are an ATS-grade AI Job Readiness Assistant.
@@ -296,29 +378,24 @@ Your Task:
 # MAIN ORCHESTRATOR
 # ===================================================================
 def run_gap_analysis(resume_db: Chroma, jd_db: Chroma) -> Dict[str, Any]:
-    # 1. RAW TEXT (for skill dictionary + similarity)
+    # 1. RAW TEXT (for similarity score only)
     resume_docs = resume_db._collection.get().get("documents", []) if resume_db is not None else []
     jd_docs = jd_db._collection.get().get("documents", []) if jd_db is not None else []
 
     resume_raw = "\n".join(resume_docs)
     jd_raw = "\n".join(jd_docs)
 
-    # 2. Skill matching (dictionary-based, not sent to LLM)
-    matched, missing, extra = extract_resume_jd_skills(resume_raw, jd_raw)
-    skills = {
-        "matched_skills": matched,
-        "missing_skills": missing,
-        "extra_skills": extra,
-    }
-
-    # 3. Similarity + Match Score
+    # 2. Similarity + Match Score (unchanged)
     similarity, match_score = compute_similarity_score(resume_raw, jd_raw)
 
-    # 4. Section-aware, hybrid RAG retrieval
+    # 3. Section-aware, hybrid RAG retrieval (unchanged)
     resume_chunks = _retrieve_weighted_resume_context(resume_db)
     jd_chunks = _retrieve_weighted_jd_context(jd_db)
 
-    # 5. LLM gap analysis (RAG-grounded)
+    # 4. NEW: LLM-based skill extraction using retrieved chunks
+    skills = extract_skills_with_llm(resume_chunks, jd_chunks)
+
+    # 5. LLM gap analysis (RAG-grounded, unchanged)
     llm_output = generate_gap_analysis_with_llm(
         similarity=similarity,
         match_score=match_score,
@@ -326,7 +403,7 @@ def run_gap_analysis(resume_db: Chroma, jd_db: Chroma) -> Dict[str, Any]:
         jd_chunks=jd_chunks,
     )
 
-    # Debug prints – now safe, always dicts
+    # Debug prints – still safe, always dicts
     print("\n===== RESUME RETRIEVED CHUNKS =====")
     for idx, c in enumerate(resume_chunks, 1):
         text = c.get("text", "")[:150]
@@ -339,7 +416,7 @@ def run_gap_analysis(resume_db: Chroma, jd_db: Chroma) -> Dict[str, Any]:
         section = c.get("section", "unknown")
         print(f"[{idx}] Section: {section} | Text: {text}")
 
-    # 6. Final structured result
+    # 6. Final structured result  ✅ same shape as before
     return {
         "similarity_score": similarity,
         "match_score_0_10": match_score,
