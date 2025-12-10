@@ -10,12 +10,15 @@ from gap_analysis_llm import run_gap_analysis
 from fastapi import FastAPI
 from chat_endpoint import router as chat_router
 from memory_db import resume_db as mem_resume_db, jd_db as mem_jd_db
+from speech_to_text import router as stt_router
+
 
 
 app = FastAPI()
 
 # ... your existing routers
 
+app.include_router(stt_router, prefix="/api")
 
 # app = FastAPI()
 app.include_router(chat_router, prefix="/api")

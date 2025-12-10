@@ -119,19 +119,25 @@ export default function Analyzer() {
           <h3>Results</h3>
 
           <div className="score-grid">
-            <div className="score-card">
-              <div className="score-circle">
-                {parsed.similarity_score?.toFixed(2)}
-              </div>
-              <p>Similarity</p>
-            </div>
 
-            <div className="score-card">
-              <div className="score-circle secondary">
-                {parsed.match_score_0_10}
-              </div>
-              <p>Match Score</p>
-            </div>
+  {/* MATCH SCORE ONLY */}
+  <div className="score-card">
+    <div className="score-circle secondary">
+      {parsed.match_score_0_10}
+    </div>
+
+    {/* Rating Label */}
+    <p>
+      {parsed.match_score_0_10 >= 8
+        ? "High Match"
+        : parsed.match_score_0_10 >= 5
+        ? "Medium Match"
+        : "Low Match"}
+    </p>
+  </div>
+
+
+
           </div>
 
           <h4>Matched Skills</h4>

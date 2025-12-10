@@ -1,14 +1,76 @@
-import React, { useState } from "react";
-
-const SESSION_ID = "resume-chat-1";
+import React, { useState, useEffect } from "react";
 
 export default function ChatDrawer() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
+  const [recordingStatus, setRecordingStatus] = useState("");
 
-  const toggleDrawer = () => setOpen(!open);
+  useEffect(() => {
+    window.speechSynthesis.onvoiceschanged = () => {};
+  }, []);
 
+  // ----------------------------
+  // 🔊 Text-to-Speech
+  // ----------------------------
+  const speak = (text) => {
+    if (!text || !window.speechSynthesis || !voiceEnabled) return;
+
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.rate = 1;
+    window.speechSynthesis.speak(utter);
+  };
+
+  // ----------------------------
+  // 🎤 Voice Recording
+  // ----------------------------
+  let mediaRecorder;
+  let audioChunks = [];
+
+  const startVoiceInput = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+      mediaRecorder = new MediaRecorder(stream);
+      audioChunks = [];
+      mediaRecorder.start();
+
+      // ✔ NO POPUP, only UI message
+      setRecordingStatus("🎙️ Listening...");
+
+      mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+
+      mediaRecorder.onstop = async () => {
+        setRecordingStatus("⏳ Processing...");
+
+        const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
+        const formData = new FormData();
+        formData.append("audio", audioBlob, "recording.wav");
+
+        const res = await fetch("http://localhost:8000/api/speech-to-text", {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = await res.json();
+        setInput(data.text);
+
+        setRecordingStatus(""); // remove indicator
+      };
+
+      setTimeout(() => mediaRecorder.stop(), 4000);
+    } catch (e) {
+      // ✔ Silent UI error instead of alert()
+      setRecordingStatus("⚠️ Microphone blocked");
+      setTimeout(() => setRecordingStatus(""), 2000);
+    }
+  };
+
+  // ----------------------------
+  // 💬 Chat Logic
+  // ----------------------------
   const sendMessage = async (e) => {
     e.preventDefault();
     const query = input.trim();
@@ -21,92 +83,74 @@ export default function ChatDrawer() {
       const res = await fetch("http://localhost:8000/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: query, // MUST BE EXACT NAME
-        }),
+        body: JSON.stringify({ message: query }),
       });
 
       const data = await res.json();
 
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: data.answer },
-      ]);
-    } catch (err) {
-      console.error(err);
+      setMessages((prev) => [...prev, { role: "assistant", content: data.answer }]);
+
+      if (voiceEnabled) speak(data.answer);
+
+    } catch (e) {
+      setRecordingStatus("⚠️ Chat error");
+      setTimeout(() => setRecordingStatus(""), 2000);
     }
   };
 
   return (
     <>
-      {/* Floating Chat Button */}
-      <button
-        onClick={toggleDrawer}
-        className="chat-fab"
-        aria-label="Open career coach chat"
-      >
-        💬
-      </button>
+      <button onClick={() => setOpen(true)} className="chat-fab">💬</button>
 
-      {/* Dimmed background */}
-      <div
-        className={`chat-backdrop ${open ? "open" : ""}`}
-        onClick={toggleDrawer}
-      />
+      <div className={`chat-backdrop ${open ? "open" : ""}`} onClick={() => setOpen(false)} />
 
-      {/* Sliding drawer */}
       <aside className={`chat-drawer ${open ? "open" : ""}`}>
         <header className="chat-drawer-header">
-          <div>
-            <h2>Career Coach</h2>
-            <p>Ask anything about your resume, JD or skills.</p>
-          </div>
-          <button
-            onClick={toggleDrawer}
-            className="chat-close-btn"
-            aria-label="Close chat"
-          >
-            ✕
-          </button>
+          <h2>Career Coach</h2>
+          <button onClick={() => setOpen(false)} className="chat-close-btn">✕</button>
         </header>
+
+        {/* Recording Status */}
+        {recordingStatus && (
+          <div className="recording-status">{recordingStatus}</div>
+        )}
 
         <div className="chat-messages">
           {messages.map((m, i) => (
-            <div
-              key={i}
-              className={`chat-row ${m.role === "user" ? "right" : "left"}`}
-            >
-              <div
-                className={`chat-bubble ${
-                  m.role === "user" ? "user-bubble" : "assistant-bubble"
-                }`}
-              >
+            <div key={i} className={`chat-row ${m.role === "user" ? "right" : "left"}`}>
+              <div className={`chat-bubble ${m.role === "user" ? "user-bubble" : "assistant-bubble"}`}>
                 {m.content}
               </div>
             </div>
           ))}
-
-          {messages.length === 0 && (
-            <div className="chat-empty">
-              <p>Try asking:</p>
-              <ul>
-                <li>“How can I improve this resume for frontend roles?”</li>
-                <li>“Which skills should I learn first from the missing list?”</li>
-              </ul>
-            </div>
-          )}
         </div>
 
         <form onSubmit={sendMessage} className="chat-input-form">
           <input
+            className="chat-input"
+            placeholder="Ask career coach..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask your career coach..."
-            className="chat-input"
           />
-          <button type="submit" className="chat-send-btn">
-            ➤
+
+          {/* 🎤 Mic */}
+          <button type="button" className="chat-mic-btn" onClick={startVoiceInput}>
+            🎤
           </button>
+
+          {/* 🔊 Speak Toggle */}
+          <button
+            type="button"
+            className="chat-voice-toggle"
+            onClick={() => {
+              window.speechSynthesis.cancel();
+              setVoiceEnabled(!voiceEnabled);
+            }}
+          >
+            {voiceEnabled ? "🔊" : "🔈"}
+          </button>
+
+          <button type="submit" className="chat-send-btn">➤</button>
         </form>
       </aside>
     </>

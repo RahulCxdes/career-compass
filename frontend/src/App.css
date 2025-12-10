@@ -39,22 +39,22 @@ body {
   gap: 32px;
 }
 
-/* HEADER CONTAINER */
+
 .header {
-  padding: 18px 40px;       /* more horizontal breathing space */
+  padding: 18px 40px;       
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-/* LEFT SIDE: Logo + Text */
+
 .header-left {
   display: flex;
   align-items: center;
   gap: 14px;
 }
 
-/* Circle Logo */
+
 .logo-mark {
   font-size: 1.5rem;
   width: 44px;
