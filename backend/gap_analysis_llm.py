@@ -18,9 +18,7 @@ from query_expansion import expand_query
 from hybrid_retrieval import hybrid_search
 
 
-# -----------------------------------------------------------
-# GROQ CLIENT
-# -----------------------------------------------------------
+
 def get_groq_client() -> Groq:
     api_key = os.environ.get("GROQ_API_KEY")
     if not api_key:
@@ -28,9 +26,7 @@ def get_groq_client() -> Groq:
     return Groq(api_key=api_key)
 
 
-# -----------------------------------------------------------
-# NORMALIZE CHUNKS
-# -----------------------------------------------------------
+
 def _ensure_chunk_dict(c: Any, default_section: str = "other") -> Dict[str, Any]:
     if isinstance(c, dict):
         if "section" not in c:
@@ -47,16 +43,14 @@ def _normalize_chunk_list(chunks: List[Any], default_section: str) -> List[Dict[
     return [_ensure_chunk_dict(c, default_section) for c in chunks]
 
 
-# -----------------------------------------------------------
-# RESUME CONTEXT RETRIEVAL
-# -----------------------------------------------------------
+
 def _retrieve_weighted_resume_context(resume_db: Chroma) -> List[Dict[str, Any]]:
     if resume_db is None:
         return [_ensure_chunk_dict("Resume missing.", "other")]
 
     collected = []
 
-    # Skills
+
     skills_raw = hybrid_search(
         search_query=expand_query("technical skills from resume"),
         db=resume_db,
@@ -68,7 +62,7 @@ def _retrieve_weighted_resume_context(resume_db: Chroma) -> List[Dict[str, Any]]
     )
     collected.extend(_normalize_chunk_list(skills_raw, "skills"))
 
-    # Experience
+
     exp_raw = hybrid_search(
         search_query=expand_query("work experience achievements"),
         db=resume_db,
@@ -82,7 +76,7 @@ def _retrieve_weighted_resume_context(resume_db: Chroma) -> List[Dict[str, Any]]
         if c not in collected:
             collected.append(c)
 
-    # Projects
+
     proj_raw = hybrid_search(
         search_query=expand_query("important projects"),
         db=resume_db,
@@ -98,17 +92,12 @@ def _retrieve_weighted_resume_context(resume_db: Chroma) -> List[Dict[str, Any]]
 
     return collected
 
-
-# -----------------------------------------------------------
-# JD CONTEXT RETRIEVAL
-# -----------------------------------------------------------
 def _retrieve_weighted_jd_context(jd_db: Chroma) -> List[Dict[str, Any]]:
     if jd_db is None:
         return [_ensure_chunk_dict("JD missing.", "other")]
 
     collected = []
 
-    # Requirements
     req_raw = hybrid_search(
         search_query=expand_query("required skills job requirements"),
         db=jd_db,
@@ -120,7 +109,6 @@ def _retrieve_weighted_jd_context(jd_db: Chroma) -> List[Dict[str, Any]]:
     )
     collected.extend(_normalize_chunk_list(req_raw, "requirements"))
 
-    # Responsibilities
     resp_raw = hybrid_search(
         search_query=expand_query("responsibilities tasks"),
         db=jd_db,
@@ -134,7 +122,7 @@ def _retrieve_weighted_jd_context(jd_db: Chroma) -> List[Dict[str, Any]]:
         if c not in collected:
             collected.append(c)
 
-    # Additional fallback if needed
+
     if len(collected) < 2:
         gen_raw = hybrid_search(
             search_query=expand_query("skills technologies job description"),
@@ -150,10 +138,6 @@ def _retrieve_weighted_jd_context(jd_db: Chroma) -> List[Dict[str, Any]]:
 
     return collected
 
-
-# -----------------------------------------------------------
-# NEW: EXTRACT ONLY SKILLS SECTION FOR LLM
-# -----------------------------------------------------------
 def get_only_skill_section_text(chunks: List[Dict[str, Any]]) -> str:
     text_blocks = []
     for c in chunks:
@@ -161,10 +145,6 @@ def get_only_skill_section_text(chunks: List[Dict[str, Any]]) -> str:
             text_blocks.append(c.get("text", ""))
     return "\n".join(text_blocks).strip()
 
-
-# -----------------------------------------------------------
-# NEW: LLM SKILL EXTRACTION USING ONLY SKILLS SECTION
-# -----------------------------------------------------------
 
 
 def extract_skill_lists(resume_chunks, jd_chunks):
@@ -186,7 +166,6 @@ def extract_skill_lists(resume_chunks, jd_chunks):
     resume_skill_text = get_skill_text(resume_chunks)
     jd_skill_text = get_skill_text(jd_chunks)
 
-    # Convert raw text into lists by splitting only on commas and newlines
     def to_list(text):
         if not text:
             return []
@@ -196,28 +175,20 @@ def extract_skill_lists(resume_chunks, jd_chunks):
     resume_skill_list = to_list(resume_skill_text)
     jd_skill_list = to_list(jd_skill_text)
 
-    # Print in VS Code terminal
+
     print("\n===== RESUME SKILL LIST =====")
     print(resume_skill_list)
 
     print("\n===== JD SKILL LIST =====")
     print(jd_skill_list)
 
-    # Return as object
+
     return {
         "resume_skill_list": resume_skill_list,
         "jd_skill_list": jd_skill_list
     }
 
 
-
-
-
-
-
-# -----------------------------------------------------------
-# GAP ANALYSIS (UNCHANGED)
-# -----------------------------------------------------------
 def generate_gap_analysis_with_llm(
     *,
     similarity: float,
@@ -274,21 +245,18 @@ def compare_skill_lists_pure(resume_skill_list, jd_skill_list):
     NO LLM.
     """
 
-    # 1️⃣ Normalize items
+
     def normalize(s: str):
         s = s.strip().lower()
 
-        # remove bullets
         if s.startswith("-"):
             s = s[1:].strip()
 
-        # remove labels like "programming languages:"
         if ":" in s:
             prefix = s.split(":")[0]
             if any(x in prefix for x in ["programming", "framework", "library"]):
                 s = s.split(":", 1)[1].strip()
 
-        # ignore empty or bad tokens
         if s in ["preferred", "preferred:"]:
             return ""
 
@@ -297,7 +265,6 @@ def compare_skill_lists_pure(resume_skill_list, jd_skill_list):
     resume_clean = {normalize(s) for s in resume_skill_list if normalize(s)}
     jd_clean = {normalize(s) for s in jd_skill_list if normalize(s)}
 
-    # 2️⃣ Pure logical comparison
     matched = sorted(list(resume_clean & jd_clean))
     missing = sorted(list(jd_clean - resume_clean))
     extra = sorted(list(resume_clean - jd_clean))
@@ -309,11 +276,6 @@ def compare_skill_lists_pure(resume_skill_list, jd_skill_list):
     }
 
 
-
-
-# ===================================================================
-# MAIN ORCHESTRATOR (ONLY SKILL LOGIC CHANGED)
-# ===================================================================
 def run_gap_analysis(resume_db: Chroma, jd_db: Chroma) -> Dict[str, Any]:
 
     resume_docs = resume_db._collection.get().get("documents", []) if resume_db else []
@@ -327,7 +289,6 @@ def run_gap_analysis(resume_db: Chroma, jd_db: Chroma) -> Dict[str, Any]:
     resume_chunks = _retrieve_weighted_resume_context(resume_db)
     jd_chunks = _retrieve_weighted_jd_context(jd_db)
 
-    # 1️⃣ Generate gap analysis summary (unchanged)
     llm_output = generate_gap_analysis_with_llm(
         similarity=similarity,
         match_score=match_score,
@@ -335,7 +296,6 @@ def run_gap_analysis(resume_db: Chroma, jd_db: Chroma) -> Dict[str, Any]:
         jd_chunks=jd_chunks,
     )
 
-    # 2️⃣ Extract skills ONLY from SKILLS section using LLM
     skill_lists = extract_skill_lists(resume_chunks, jd_chunks)
 
     skills = compare_skill_lists_pure(

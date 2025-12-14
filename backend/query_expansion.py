@@ -1,4 +1,4 @@
-# query_expansion.py
+
 import os
 from groq import Groq
 

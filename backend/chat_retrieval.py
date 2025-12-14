@@ -20,16 +20,15 @@ def retrieve_context_for_chat(query: str, k: int = 3) -> Dict[str, str]:
       - Cross-encoder reranking
     """
 
-    # 1️⃣ Expand the query
+
     expanded_query = expand_query(query)
 
-    # 2️⃣ Decide target: resume / JD / both
+
     target = target_for_retrieval(query)
 
     resume_context = ""
     jd_context = ""
 
-    # 3️⃣ Resume context
     if target in (QueryTarget.RESUME, QueryTarget.BOTH):
         if getattr(memory_db, "resume_db", None):
             best_docs = hybrid_search(
@@ -43,7 +42,6 @@ def retrieve_context_for_chat(query: str, k: int = 3) -> Dict[str, str]:
             )
             resume_context = _docs_to_text(best_docs)
 
-    # 4️⃣ JD context
     if target in (QueryTarget.JD, QueryTarget.BOTH):
         if getattr(memory_db, "jd_db", None):
             best_docs = hybrid_search(

@@ -1,4 +1,12 @@
 import React, { useState } from "react";
+import { marked } from "marked";
+import "./Analyzer.css";
+import ChatDrawer from "./ChatDrawer";
+
+function formatSummary(text) {
+  return { __html: marked.parse(text) };
+}
+
 
 export default function Analyzer() {
   const [resumeFile, setResumeFile] = useState(null);
@@ -113,55 +121,73 @@ export default function Analyzer() {
         </div>
       </div>
 
-      {/* RESULTS */}
-      {parsed && (
-        <div className="results-section">
-          <h3>Results</h3>
+{parsed && (
+  <div className="results-section">
 
-          <div className="score-grid">
+    <h3 className="results-title">Analysis Results</h3>
 
-  {/* MATCH SCORE ONLY */}
-  <div className="score-card">
-    <div className="score-circle secondary">
-      {parsed.match_score_0_10}
+    <div className="score-wrapper">
+      <div 
+        className={`score-meter ${
+          parsed.match_score_0_10 >= 8
+            ? "high"
+            : parsed.match_score_0_10 >= 5
+            ? "medium"
+            : "low"
+        }`}
+        style={{ "--percent": parsed.match_score_0_10 * 10 }}
+      >
+        <div className="score-meter-inner">
+          {parsed.match_score_0_10}
+          <span className="score-label-text">
+            {parsed.match_score_0_10 >= 8
+              ? "High Match"
+              : parsed.match_score_0_10 >= 5
+              ? "Medium Match"
+              : "Low Match"}
+          </span>
+        </div>
+      </div>
     </div>
 
-    {/* Rating Label */}
-    <p>
-      {parsed.match_score_0_10 >= 8
-        ? "High Match"
-        : parsed.match_score_0_10 >= 5
-        ? "Medium Match"
-        : "Low Match"}
-    </p>
-  </div>
-
-
-
-          </div>
-
-          <h4>Matched Skills</h4>
-          {parsed.skills?.matched_skills?.map((s, i) => (
-            <span className="skill-badge badge-match" key={i}>{s}</span>
-          ))}
-
-          <h4>Missing Skills</h4>
-          {parsed.skills?.missing_skills?.map((s, i) => (
-            <span className="skill-badge badge-missing" key={i}>{s}</span>
-          ))}
-
-          <h4>Extra Skills</h4>
-          {parsed.skills?.extra_skills?.map((s, i) => (
-            <span className="skill-badge badge-extra" key={i}>{s}</span>
-          ))}
-
-          <div className="summary-card">
-        <h4 className="summary-title">AI Summary</h4>
-        <p className="summary-text">{parsed.llm_analysis}</p>
+    {/* SKILLS */}
+    <div className="skills-wrapper">
+      <h4>Matched Skills</h4>
+      <div className="skills-badges">
+        {parsed.skills?.matched_skills?.map((s, i) => (
+          <span className="skill-badge badge-match" key={i}>{s}</span>
+        ))}
       </div>
 
-        </div>
-      )}
+      <h4>Missing Skills</h4>
+      <div className="skills-badges">
+        {parsed.skills?.missing_skills?.map((s, i) => (
+          <span className="skill-badge badge-missing" key={i}>{s}</span>
+        ))}
+      </div>
+
+      <h4>Extra Skills</h4>
+      <div className="skills-badges">
+        {parsed.skills?.extra_skills?.map((s, i) => (
+          <span className="skill-badge badge-extra" key={i}>{s}</span>
+        ))}
+      </div>
+    </div>
+
+ <div className="summary-block">
+  <h3>AI Summary</h3>
+
+  <div
+    className="formatted-summary enhanced-summary"
+    dangerouslySetInnerHTML={formatSummary(parsed.llm_analysis)}
+  />
+</div>
+
+
+
+  </div>
+)}
+{/* <ChatDrawer/> */}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-# intent_detection.py
+
 from enum import Enum
 from typing import Literal
 
@@ -30,7 +30,6 @@ def detect_query_target(query: str) -> QueryTarget:
     """Classify the user query as resume / jd / both / unknown."""
     q = query.lower()
 
-    # Highest priority: BOTH
     if any(kw in q for kw in BOTH_KEYWORDS):
         return QueryTarget.BOTH
 
@@ -44,7 +43,6 @@ def detect_query_target(query: str) -> QueryTarget:
     if jd_hit:
         return QueryTarget.JD
 
-    # No explicit signals → UNKNOWN
     return QueryTarget.UNKNOWN
 
 

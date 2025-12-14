@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import "./ChatBox.css";
 
 export default function ChatBox() {
   const [input, setInput] = useState("");

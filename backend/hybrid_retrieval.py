@@ -1,4 +1,4 @@
-# hybrid_retrieval.py
+
 """
 HYBRID RETRIEVAL ENGINE
 -----------------------
@@ -19,12 +19,8 @@ from typing import List, Dict, Optional
 from rank_bm25 import BM25Okapi
 from langchain_chroma import Chroma
 
-from reranker import rerank  # updated cross-encoder returning scores
+from reranker import rerank  
 
-
-# -------------------------------------------------------------
-# Helper: Get corpus with optional section filtering
-# -------------------------------------------------------------
 def _get_filtered_corpus(db: Chroma, section_filter: Optional[str] = None):
     raw = db._collection.get()
     docs = raw.get("documents", [])
@@ -40,18 +36,10 @@ def _get_filtered_corpus(db: Chroma, section_filter: Optional[str] = None):
 
     return corpus_texts, corpus_metas
 
-
-# -------------------------------------------------------------
-# Helper: Build BM25
-# -------------------------------------------------------------
 def _build_bm25(corpus_texts: List[str]) -> BM25Okapi:
     tokens = [doc.lower().split() for doc in corpus_texts]
     return BM25Okapi(tokens)
 
-
-# -------------------------------------------------------------
-# MAIN HYBRID SEARCH FUNCTION
-# -------------------------------------------------------------
 def hybrid_search(
     search_query: str,
     db: Chroma,
@@ -65,12 +53,10 @@ def hybrid_search(
     if db is None:
         return []
 
-    # STEP 1 → Get corpus
     corpus_texts, corpus_metas = _get_filtered_corpus(db, section_filter)
     if not corpus_texts:
         return []
 
-    # STEP 2 → BM25
     bm25 = _build_bm25(corpus_texts)
     query_tokens = search_query.lower().split()
     bm25_scores = bm25.get_scores(query_tokens)
@@ -81,7 +67,6 @@ def hybrid_search(
         reverse=True
     )[:bm25_k]
 
-    # STEP 3 → Vector similarity
     filter_dict = {"section": section_filter} if section_filter else None
 
     try:
@@ -90,7 +75,7 @@ def hybrid_search(
     except:
         vec_ranked = []
 
-    # STEP 4 → Merge unique candidates
+
     candidates = bm25_ranked + vec_ranked
 
     seen = set()
@@ -102,7 +87,6 @@ def hybrid_search(
 
     candidate_texts = [u[0] for u in unique[: max(top_k * 2, top_k)]]
 
-    # STEP 5 → RERANKING WITH SCORES
     if use_rerank:
         reranked_items = rerank(search_query, candidate_texts, top_k)
 
@@ -111,19 +95,17 @@ def hybrid_search(
             text = item["text"]
             score = item["score"]
 
-            # Retrieve metadata for this chunk
             meta = next((m for t, m, s in unique if t == text), {})
 
             results.append({
                 "text": text,
                 "metadata": meta,
                 "section": meta.get("section"),
-                "reranker_score": score   # ⭐ REAL SCORE
+                "reranker_score": score  
             })
 
         return results
 
-    # STEP 6 → NO RERANK → fallback
     results = []
     for text, meta, score in unique[:top_k]:
         results.append({

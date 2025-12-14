@@ -32,7 +32,7 @@ function PageWrapper() {
 }
 
 function AnalyzerChat() {
-  const ChatDrawer = require("./ChatDrawer").default;
+  const ChatDrawer = require("./pages/ChatDrawer").default;
   return <ChatDrawer />;
 }
 

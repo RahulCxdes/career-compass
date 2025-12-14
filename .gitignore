@@ -7,6 +7,7 @@ env/
 venv/
 *.sqlite3
 
+
 # FastAPI Uploads or runtime files
 uploads/
 tmp/

@@ -19,7 +19,6 @@ def rewrite_query(history: list, user_message: str) -> str:
     If no rewriting needed, returns original query.
     """
 
-    # If no history, return as-is
     if not history:
         return user_message
 
@@ -54,7 +53,6 @@ Rewrite it into a standalone, explicit query:
 
     rewritten = resp.choices[0].message.content.strip()
 
-    # Safety fallback: if model outputs garbage
     if len(rewritten) < 3:
         return user_message
 

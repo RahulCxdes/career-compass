@@ -1,6 +1,4 @@
-# =============================================================
-# missing_skills.py (FIXED VERSION)
-# =============================================================
+
 
 import json
 import re
@@ -25,10 +23,6 @@ def clean_text(text: str):
     text = re.sub(r"[^a-z0-9\+\#\.\- ]", " ", text)
     return text
 
-
-# ============================================
-# FIX 1 — Remove single-letter skills + fix multi-word detection
-# ============================================
 def extract_dictionary_skills(text: str):
     text = clean_text(text)
     found = []
@@ -37,17 +31,14 @@ def extract_dictionary_skills(text: str):
 
         skill_clean = skill.lower().strip()
 
-        # ❌ Ignore single-letter skills -> fix C / R issue
         if len(skill_clean) <= 1:
             continue
 
-        # MULTI-WORD or SYMBOL SKILLS → substring match
         if " " in skill_clean or "/" in skill_clean or "-" in skill_clean:
             if skill_clean in text:
                 found.append(skill_clean)
             continue
 
-        # SINGLE WORD SKILL → STRICT word boundary match
         esc = re.escape(skill_clean)
         pattern = r"\b" + esc + r"\b"
 
@@ -56,10 +47,6 @@ def extract_dictionary_skills(text: str):
 
     return sorted(list(set(found)))
 
-
-# ============================================
-# FIX 2 — Prevent false semantic matches (AWS, microservices, etc.)
-# ============================================
 def semantic_match(resume_skills, jd_skills, threshold=0.75):
     if not resume_skills or not jd_skills:
         return []
@@ -73,13 +60,10 @@ def semantic_match(resume_skills, jd_skills, threshold=0.75):
 
     for i, jd_s in enumerate(jd_skills):
 
-        # HARD RULE — Resume must contain at least one word from JD skill
-        # This blocks AWS, microservices, microservices architecture
         words = jd_s.split()
         if not any(w in resume_text for w in words):
             continue
 
-        # Semantic similarity check
         score = util.cos_sim(j_emb[i], r_emb)[0].max().item()
 
         if score >= threshold:

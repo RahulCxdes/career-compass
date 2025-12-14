@@ -1,7 +1,3 @@
-# ============================================================
-# chat_endpoint.py
-# Fully optimized, history-aware RAG chat module
-# ============================================================
 
 from fastapi import APIRouter
 from pydantic import BaseModel
@@ -11,16 +7,8 @@ from hybrid_retrieval import hybrid_search
 
 router = APIRouter()
 
-# -------------------------------
-# Conversation Memory in RAM
-# Only stores real messages
-# -------------------------------
-CHAT_HISTORY = []  # last 12 turns
+CHAT_HISTORY = [] 
 
-
-# -------------------------------
-# Groq Client Helper
-# -------------------------------
 def get_client():
     import os
     api_key = os.getenv("GROQ_API_KEY")
@@ -28,10 +16,6 @@ def get_client():
         raise RuntimeError("Missing GROQ_API_KEY")
     return Groq(api_key=api_key)
 
-
-# -------------------------------
-# Query Rewriter (History-Aware)
-# -------------------------------
 def rewrite_query(history, user_input):
     """
     Converts ambiguous queries into explicit ones.
@@ -41,7 +25,7 @@ def rewrite_query(history, user_input):
     """
     client = get_client()
 
-    # Use only last 6 messages for context
+ 
     convo = "\n".join([f"{m['role']}: {m['content']}" for m in history[-6:]])
 
     prompt = f"""
@@ -66,16 +50,10 @@ Return ONLY the rewritten query. No explanations. No formatting.
     return resp.choices[0].message.content.strip()
 
 
-# -------------------------------
-# Chat Request Schema
-# -------------------------------
 class ChatRequest(BaseModel):
     message: str
 
 
-# -------------------------------
-# MAIN CHAT ENDPOINT
-# -------------------------------
 @router.post("/chat")
 async def chat(req: ChatRequest):
     global CHAT_HISTORY
@@ -83,14 +61,10 @@ async def chat(req: ChatRequest):
     user_msg = req.message
     CHAT_HISTORY.append({"role": "user", "content": user_msg})
 
-    # -------------------------------------------------------
-    # STEP 1 — Rewrite Query using history (but DO NOT store)
-    # -------------------------------------------------------
+
     rewritten = rewrite_query(CHAT_HISTORY, user_msg)
 
-    # -------------------------------------------------------
-    # STEP 2 — Retrieve context from Resume/JD DBs
-    # -------------------------------------------------------
+
     resume_db = memory_db.resume_db
     jd_db = memory_db.jd_db
 
@@ -113,7 +87,7 @@ async def chat(req: ChatRequest):
             use_rerank=True,
         )
 
-    # Convert chunks to simple text blocks
+
     resume_text = "\n".join(
         [c["text"] if isinstance(c, dict) else str(c) for c in resume_chunks]
     )
@@ -121,9 +95,7 @@ async def chat(req: ChatRequest):
         [c["text"] if isinstance(c, dict) else str(c) for c in jd_chunks]
     )
 
-    # -------------------------------------------------------
-    # STEP 3 — Build final prompt for LLM
-    # -------------------------------------------------------
+
     prompt = f"""
 You are a career assistant AI.
 
@@ -143,9 +115,7 @@ JD Context:
 {jd_text or "NO JD CONTEXT FOUND"}
 """
 
-    # -------------------------------------------------------
-    # STEP 4 — LLM Final Response
-    # -------------------------------------------------------
+
     client = get_client()
     resp = client.chat.completions.create(
         model="llama-3.1-8b-instant",
@@ -156,13 +126,13 @@ JD Context:
 
     answer = resp.choices[0].message.content.strip()
 
-    # Save assistant reply into chat history
+
     CHAT_HISTORY.append({"role": "assistant", "content": answer})
 
-    # Keep history short
+
     CHAT_HISTORY = CHAT_HISTORY[-12:]
 
-    # Frontend response
+
     return {
         "answer": answer,
         "rewritten_query": rewritten,
