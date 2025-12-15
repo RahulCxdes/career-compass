@@ -12,9 +12,6 @@ export default function ChatDrawer() {
     window.speechSynthesis.onvoiceschanged = () => {};
   }, []);
 
-  // ----------------------------
-  // 🔊 Text-to-Speech
-  // ----------------------------
   const speak = (text) => {
     if (!text || !window.speechSynthesis || !voiceEnabled) return;
 
@@ -24,9 +21,6 @@ export default function ChatDrawer() {
     window.speechSynthesis.speak(utter);
   };
 
-  // ----------------------------
-  // 🎤 Voice Recording
-  // ----------------------------
   let mediaRecorder;
   let audioChunks = [];
 
@@ -38,7 +32,6 @@ export default function ChatDrawer() {
       audioChunks = [];
       mediaRecorder.start();
 
-      // ✔ NO POPUP, only UI message
       setRecordingStatus("🎙️ Listening...");
 
       mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
@@ -58,20 +51,18 @@ export default function ChatDrawer() {
         const data = await res.json();
         setInput(data.text);
 
-        setRecordingStatus(""); // remove indicator
+        setRecordingStatus(""); 
       };
 
       setTimeout(() => mediaRecorder.stop(), 4000);
     } catch (e) {
-      // ✔ Silent UI error instead of alert()
+    
       setRecordingStatus("⚠️ Microphone blocked");
       setTimeout(() => setRecordingStatus(""), 2000);
     }
   };
 
-  // ----------------------------
-  // 💬 Chat Logic
-  // ----------------------------
+
   const sendMessage = async (e) => {
     e.preventDefault();
     const query = input.trim();
@@ -111,7 +102,7 @@ export default function ChatDrawer() {
           <button onClick={() => setOpen(false)} className="chat-close-btn">✕</button>
         </header>
 
-        {/* Recording Status */}
+
         {recordingStatus && (
           <div className="recording-status">{recordingStatus}</div>
         )}
@@ -134,12 +125,10 @@ export default function ChatDrawer() {
             onChange={(e) => setInput(e.target.value)}
           />
 
-          {/* 🎤 Mic */}
           <button type="button" className="chat-mic-btn" onClick={startVoiceInput}>
             🎤
           </button>
 
-          {/* 🔊 Speak Toggle */}
           <button
             type="button"
             className="chat-voice-toggle"

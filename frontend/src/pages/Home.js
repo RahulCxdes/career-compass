@@ -69,28 +69,28 @@ export default function Home() {
      <section className="hero-section">
   <div className="hero-text">
 
-    {/* TAG */}
+
     <p className="eyebrow">Career Launchpad</p>
 
-    {/* NEW CATCHY QUOTE */}
+
     <h2 className="hero-title large">
       Build a resume that opens doors.
     </h2>
 
-    {/* SUBTITLE */}
+
     <p className="hero-subtitle large">
       AI-powered analysis that helps you improve your resume, match job descriptions, 
       and level up your career.
     </p>
 
-    {/* BUTTON */}
+ 
     <div className="hero-actions">
       <Link to="/analyzer" className="primary-btn large-btn">
         Start Analyzing →
       </Link>
     </div>
 
-    {/* META TAGS */}
+
     <div className="hero-meta large-meta">
       <span>AI insights</span>
       <span>Skill-gap detection</span>
@@ -99,7 +99,7 @@ export default function Home() {
   </div>
 </section>
 
-      {/* TIP CARDS */}
+
       <section className="tips-section">
         <h3 className="section-title big">Improve your resume</h3>
 

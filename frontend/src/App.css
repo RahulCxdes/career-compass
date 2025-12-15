@@ -15,16 +15,16 @@ html {
 body {
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, 'Segoe UI', sans-serif;
-  background: #0f172a;
-  color: #f1f5f9;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  background: linear-gradient(180deg, #ffffff 0%, #fef9fc 50%, #fdf5fb 100%);
+  color: #2d1f35;
   min-height: 100vh;
   overflow-x: hidden;
 }
 
 #root {
   min-height: 100vh;
-  background: #0f172a;
+  background: transparent;
   overflow-x: hidden;
 }
 
@@ -37,10 +37,9 @@ html, body, #root {
 /* ===================== APP LAYOUT ===================== */
 .app-root {
   min-height: 100vh;
-  background: #0f172a;
+  background: transparent;
 }
 
-/* Remove the old app-shell styling that adds white background */
 .app-shell {
   width: 100%;
   background: transparent;
@@ -55,12 +54,12 @@ html, body, #root {
 
 /* Selection color */
 ::selection {
-  background: #6366f1;
+  background: #ec4899;
   color: white;
 }
 
 ::-moz-selection {
-  background: #6366f1;
+  background: #ec4899;
   color: white;
 }
 
@@ -71,7 +70,7 @@ a, button, input, textarea {
 
 /* Focus visible for accessibility */
 *:focus-visible {
-  outline: 2px solid #6366f1;
+  outline: 2px solid #ec4899;
   outline-offset: 2px;
 }
 
@@ -87,16 +86,16 @@ a, button, input, textarea {
 }
 
 ::-webkit-scrollbar-track {
-  background: #1e293b;
+  background: #fdf5fb;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #6366f1, #ec4899);
+  background: linear-gradient(180deg, #ec4899, #a855f7);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #818cf8, #f472b6);
+  background: linear-gradient(180deg, #f472b6, #c084fc);
 }
 
 /* ===================== BUTTONS (SHARED) ===================== */
@@ -111,15 +110,15 @@ a, button, input, textarea {
   cursor: pointer;
   font-size: 0.95rem;
   font-weight: 600;
-  background: linear-gradient(135deg, #6366f1, #ec4899);
+  background: linear-gradient(135deg, #ec4899, #a855f7);
   color: white;
-  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);
   transition: all 0.3s ease;
 }
 
 .primary-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
+  box-shadow: 0 6px 20px rgba(236, 72, 153, 0.5);
 }
 
 .primary-btn:active {
@@ -129,17 +128,17 @@ a, button, input, textarea {
 .ghost-btn {
   padding: 8px 16px;
   border-radius: 10px;
-  border: 1px solid rgba(148, 163, 184, 0.3);
-  background: rgba(30, 41, 59, 0.5);
-  color: #f1f5f9;
+  border: 1px solid rgba(236, 72, 153, 0.3);
+  background: rgba(255, 252, 254, 0.5);
+  color: #2d1f35;
   cursor: pointer;
   font-weight: 600;
   transition: all 0.3s ease;
 }
 
 .ghost-btn:hover {
-  background: rgba(30, 41, 59, 0.8);
-  border-color: rgba(148, 163, 184, 0.5);
+  background: rgba(255, 252, 254, 0.9);
+  border-color: rgba(236, 72, 153, 0.5);
 }
 
 /* ===================== FORM CONTROLS (SHARED) ===================== */
@@ -149,23 +148,23 @@ a, button, input, textarea {
   resize: vertical;
   padding: 12px;
   border-radius: 12px;
-  border: 2px solid rgba(148, 163, 184, 0.2);
+  border: 2px solid rgba(236, 72, 153, 0.2);
   font-family: inherit;
   font-size: 0.95rem;
-  background: rgba(15, 23, 42, 0.6);
-  color: #f1f5f9;
+  background: rgba(255, 255, 255, 0.95);
+  color: #2d1f35;
   transition: all 0.3s ease;
 }
 
 .textarea:focus {
   outline: none;
-  border-color: #6366f1;
-  background: rgba(15, 23, 42, 0.8);
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+  border-color: #ec4899;
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.1);
 }
 
 .textarea::placeholder {
-  color: #94a3b8;
+  color: #a891b3;
 }
 
 .file-input-label {
@@ -176,17 +175,18 @@ a, button, input, textarea {
   gap: 10px;
   padding: 12px 20px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  background: linear-gradient(135deg, #ec4899, #a855f7);
   border: none;
   cursor: pointer;
   color: white;
   font-weight: 600;
   transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);
 }
 
 .file-input-label:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4);
 }
 
 .file-input-label input[type="file"] {
@@ -198,10 +198,11 @@ a, button, input, textarea {
   align-items: center;
   text-align: center;
   font-size: 0.85rem;
-  color: #94a3b8;
+  color: #9f8ba8;
   margin: 20px 0;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  font-weight: 600;
 }
 
 .divider-label::before,
@@ -209,7 +210,7 @@ a, button, input, textarea {
   content: '';
   flex: 1;
   height: 1px;
-  background: rgba(148, 163, 184, 0.2);
+  background: linear-gradient(90deg, transparent, rgba(236, 72, 153, 0.3), transparent);
 }
 
 .divider-label span {
@@ -254,12 +255,12 @@ a, button, input, textarea {
 /* High contrast mode support */
 @media (prefers-contrast: high) {
   body {
-    background: #000;
-    color: #fff;
+    background: #fff;
+    color: #000;
   }
   
   .primary-btn {
-    border: 2px solid #fff;
+    border: 2px solid #000;
   }
 }
 
@@ -277,7 +278,7 @@ a, button, input, textarea {
 }
 
 .text-gradient {
-  background: linear-gradient(135deg, #818cf8, #ec4899);
+  background: linear-gradient(135deg, #ec4899, #a855f7);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

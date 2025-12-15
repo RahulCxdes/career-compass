@@ -31,7 +31,6 @@ export default function ChatBox() {
       audioChunks = [];
       mediaRecorder.start();
 
-      // 🎙️ NO POPUP — only UI text
       setRecordingStatus("🎙️ Listening...");
 
       mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
@@ -56,7 +55,7 @@ export default function ChatBox() {
 
       setTimeout(() => mediaRecorder.stop(), 4000);
     } catch {
-      // ❌ No alert here — silent fail
+ 
       setRecordingStatus("⚠️ Microphone blocked.");
       setTimeout(() => setRecordingStatus(""), 2000);
     }
@@ -83,7 +82,7 @@ export default function ChatBox() {
 
       if (voiceEnabled) speak(data.answer);
     } catch {
-      // ❌ No popup
+  
       setRecordingStatus("⚠️ Chat error");
       setTimeout(() => setRecordingStatus(""), 2000);
     }

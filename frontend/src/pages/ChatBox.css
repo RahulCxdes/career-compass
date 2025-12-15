@@ -1,4 +1,4 @@
-/* Ultra Modern Inline Chatbot Styles with Advanced Effects */
+
 
 :root {
   --primary: #6366f1;
@@ -14,7 +14,6 @@
   --border: rgba(148, 163, 184, 0.2);
 }
 
-/* Inline Chat Container with 3D Effect */
 .inline-chat-container {
   max-width: 850px;
   margin: 3rem auto;
@@ -39,7 +38,6 @@
   }
 }
 
-/* Animated Border Glow */
 .inline-chat-container::before {
   content: '';
   position: absolute;
@@ -66,7 +64,6 @@
   opacity: 0.6;
 }
 
-/* Chat Title with Gradient and Shimmer */
 .inline-chat-title {
   font-size: 1.6rem;
   font-weight: 700;
@@ -97,7 +94,6 @@
   }
 }
 
-/* Chat Box Area with Gradient Background */
 .inline-chat-box {
   min-height: 420px;
   max-height: 550px;
@@ -110,7 +106,6 @@
   position: relative;
 }
 
-/* Fade effect at top */
 .inline-chat-box::before {
   content: '';
   position: sticky;
@@ -124,7 +119,6 @@
   margin: -2rem -2rem 0;
 }
 
-/* Custom Scrollbar with Gradient */
 .inline-chat-box::-webkit-scrollbar {
   width: 8px;
 }
@@ -144,7 +138,6 @@
   background: linear-gradient(180deg, var(--primary-light), var(--secondary));
 }
 
-/* Chat Rows with Advanced Animation */
 .chat-row {
   display: flex;
   animation: messageAppear 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -169,7 +162,6 @@
   justify-content: flex-end;
 }
 
-/* Chat Bubbles with Enhanced Styling */
 .chat-bubble {
   max-width: 75%;
   padding: 1.05rem 1.4rem;
@@ -187,7 +179,6 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
-/* User Bubble with Gradient and Shine */
 .user-bubble {
   background: linear-gradient(135deg, var(--primary), var(--primary-dark));
   color: white;
@@ -213,7 +204,6 @@
   transform: translateX(100%) translateY(100%) rotate(45deg);
 }
 
-/* Assistant Bubble with Glass Effect */
 .assistant-bubble {
   background: var(--bg-glass);
   backdrop-filter: blur(15px);
@@ -237,7 +227,7 @@
   opacity: 1;
 }
 
-/* Recording Status with Advanced Pulse */
+
 .recording-status {
   padding: 0.9rem 2rem;
   background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(99, 102, 241, 0.15));
@@ -284,7 +274,6 @@
   }
 }
 
-/* Input Form with Glass Effect */
 .chat-input-form {
   display: flex;
   align-items: center;
@@ -295,7 +284,6 @@
   backdrop-filter: blur(10px);
 }
 
-/* Chat Input with Enhanced Focus */
 .chat-input {
   flex: 1;
   padding: 0.9rem 1.3rem;
@@ -320,7 +308,6 @@
   color: var(--text-secondary);
 }
 
-/* Mic and Voice Toggle with Pulse Effect */
 .chat-mic-btn,
 .chat-voice-toggle {
   width: 44px;
@@ -394,7 +381,7 @@
   transform: scale(0.95);
 }
 
-/* Send Button with Gradient and Shimmer */
+
 .chat-send-btn {
   padding: 0.9rem 2rem;
   background: linear-gradient(135deg, var(--primary), var(--secondary));
@@ -434,7 +421,7 @@
   transform: translateY(-1px) scale(0.98);
 }
 
-/* Responsive Design */
+
 @media (max-width: 768px) {
   .inline-chat-container {
     margin: 2rem 1rem;
@@ -487,12 +474,12 @@
   }
 }
 
-/* Smooth Scrolling */
+
 html {
   scroll-behavior: smooth;
 }
 
-/* Selection */
+
 ::selection {
   background: var(--primary);
   color: white;

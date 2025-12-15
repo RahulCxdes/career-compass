@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { marked } from "marked";
 import "./Analyzer.css";
-import ChatDrawer from "./ChatDrawer";
+
 
 function formatSummary(text) {
   return { __html: marked.parse(text) };
@@ -53,7 +53,6 @@ export default function Analyzer() {
 
         <div className="upload-grid">
 
-          {/* Resume */}
           <div className="glass-card">
             <h3>Resume</h3>
 
@@ -81,7 +80,7 @@ export default function Analyzer() {
             />
           </div>
 
-          {/* JD */}
+   
           <div className="glass-card">
             <h3>Job Description</h3>
 
@@ -150,7 +149,6 @@ export default function Analyzer() {
       </div>
     </div>
 
-    {/* SKILLS */}
     <div className="skills-wrapper">
       <h4>Matched Skills</h4>
       <div className="skills-badges">
@@ -187,7 +185,7 @@ export default function Analyzer() {
 
   </div>
 )}
-{/* <ChatDrawer/> */}
+
     </div>
   );
 }
