@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { marked } from "marked";
-import "./Analyzer.css";
+import "../styles/Analyzer.css";
 
 
 function formatSummary(text) {

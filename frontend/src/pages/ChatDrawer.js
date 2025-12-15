@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import "./ChatDrawer.css";
+import "../styles/ChatDrawer.css";
 
 export default function ChatDrawer() {
   const [open, setOpen] = useState(false);

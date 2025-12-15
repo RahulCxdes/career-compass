@@ -322,6 +322,7 @@
   position: relative;
   padding-left: 2rem;
   transition: all 0.3s ease;
+  z-index: 10;
 }
 
 .hero-meta span::before {
@@ -340,6 +341,7 @@
   background: rgba(16, 185, 129, 0.12);
   border-radius: 50%;
   animation: checkPulse 2s ease-in-out infinite;
+  z-index: 10;
 }
 
 @keyframes checkPulse {
