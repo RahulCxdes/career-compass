@@ -1,0 +1,31 @@
+fastapi
+uvicorn
+python-multipart
+
+# PDF processing
+pymupdf
+
+# RAG / LangChain
+langchain
+langchain-chroma
+langchain-huggingface
+langchain-text-splitters
+
+# Vector embeddings & similarity
+sentence-transformers
+
+# Vector DB
+chromadb
+
+# Retrieval
+rank-bm25
+
+# Reranking
+torch
+
+# LLM / API
+groq
+
+# Data & validation
+pydantic
+typing-extensions

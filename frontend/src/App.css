@@ -1,4 +1,4 @@
-/* ===================== GLOBAL RESET ===================== */
+
 *,
 *::before,
 *::after {
@@ -28,13 +28,12 @@ body {
   overflow-x: hidden;
 }
 
-/* Remove any default margins/paddings that could cause white space */
+
 html, body, #root {
   margin: 0 !important;
   padding: 0 !important;
 }
 
-/* ===================== APP LAYOUT ===================== */
 .app-root {
   min-height: 100vh;
   background: transparent;
@@ -50,9 +49,6 @@ html, body, #root {
   background: transparent;
 }
 
-/* ===================== SHARED UTILITIES ===================== */
-
-/* Selection color */
 ::selection {
   background: #ec4899;
   color: white;
@@ -63,23 +59,22 @@ html, body, #root {
   color: white;
 }
 
-/* Smooth transitions for all interactive elements */
 a, button, input, textarea {
   transition: all 0.3s ease;
 }
 
-/* Focus visible for accessibility */
+
 *:focus-visible {
   outline: 2px solid #ec4899;
   outline-offset: 2px;
 }
 
-/* Remove focus outline for mouse users */
+
 *:focus:not(:focus-visible) {
   outline: none;
 }
 
-/* ===================== SCROLLBAR STYLING ===================== */
+
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -98,7 +93,6 @@ a, button, input, textarea {
   background: linear-gradient(180deg, #f472b6, #c084fc);
 }
 
-/* ===================== BUTTONS (SHARED) ===================== */
 .primary-btn {
   display: inline-flex;
   align-items: center;
@@ -141,7 +135,6 @@ a, button, input, textarea {
   border-color: rgba(236, 72, 153, 0.5);
 }
 
-/* ===================== FORM CONTROLS (SHARED) ===================== */
 .textarea {
   width: 100%;
   min-height: 120px;
@@ -217,7 +210,7 @@ a, button, input, textarea {
   padding: 0 12px;
 }
 
-/* ===================== RESPONSIVE BREAKPOINTS ===================== */
+
 @media (max-width: 768px) {
   body {
     font-size: 14px;
@@ -241,7 +234,7 @@ a, button, input, textarea {
   }
 }
 
-/* ===================== ACCESSIBILITY ===================== */
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -252,7 +245,7 @@ a, button, input, textarea {
   }
 }
 
-/* High contrast mode support */
+
 @media (prefers-contrast: high) {
   body {
     background: #fff;
@@ -264,7 +257,6 @@ a, button, input, textarea {
   }
 }
 
-/* ===================== UTILITY CLASSES ===================== */
 .sr-only {
   position: absolute;
   width: 1px;
