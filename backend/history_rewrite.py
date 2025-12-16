@@ -1,8 +1,4 @@
-"""
-Rewrite user query based on conversation history.
-Makes chatbot retrieval history-aware WITHOUT changing intent
-and ensures rewritten queries are retrieval-friendly.
-"""
+
 
 from groq import Groq
 import os
@@ -16,15 +12,7 @@ def get_groq_client():
 
 
 def rewrite_query(history: list, user_message: str) -> str:
-    """
-    Rewrites the user's message using conversation history.
-
-    CRITICAL BEHAVIOR:
-    - Preserve original intent
-    - Do NOT introduce comparison unless explicitly asked
-    - Do NOT introduce role requirements unless explicitly asked
-    - MUST produce a retrieval-usable query
-    """
+    
 
     if not history:
         return user_message
@@ -82,7 +70,7 @@ Rewrite it into a standalone, retrieval-optimized query:
 
     rewritten = resp.choices[0].message.content.strip()
 
-    # Safety fallback
+   
     if len(rewritten) < 3:
         return user_message
 

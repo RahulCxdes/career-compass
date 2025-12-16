@@ -17,13 +17,7 @@ def _get_groq_client() -> Groq:
 
 
 def target_for_retrieval(query: str) -> QueryTarget:
-    """
-    LLM-based intent detection.
-    Decides whether to retrieve:
-    - resume only
-    - jd only
-    - both
-    """
+
 
     client = _get_groq_client()
 

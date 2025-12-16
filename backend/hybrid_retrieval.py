@@ -1,19 +1,4 @@
 
-"""
-HYBRID RETRIEVAL ENGINE
------------------------
-Returns:
-- chunk text
-- section name
-- metadata
-- bm25 or reranker score
-
-Supports:
-- BM25 keyword matching
-- Vector similarity (Chroma)
-- Section filtering
-- Cross-encoder reranking
-"""
 
 from typing import List, Dict, Optional
 from rank_bm25 import BM25Okapi
