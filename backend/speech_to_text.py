@@ -13,10 +13,6 @@ def get_client():
 
 @router.post("/speech-to-text")
 async def speech_to_text(audio: UploadFile = File(...)):
-    """
-    Converts audio (wav/mp3/webm) to text using Groq Whisper.
-    DOES NOT change any chatbot logic.
-    """
 
     client = get_client()
 

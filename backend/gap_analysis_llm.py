@@ -1,10 +1,4 @@
-"""
-FULL RAG-ENABLED ANALYZE PIPELINE
-- Hybrid retrieval from Resume & JD (BM25 + embeddings + rerank)
-- Section-aware (skills / experience / projects / requirements / responsibilities)
-- Sends chunks + scores to LLM for gap analysis
-- NEW: LLM skill extraction uses ONLY SKILLS SECTION
-"""
+
 
 import os
 import json
@@ -148,14 +142,6 @@ def get_only_skill_section_text(chunks: List[Dict[str, Any]]) -> str:
 
 
 def extract_skill_lists(resume_chunks, jd_chunks):
-    """
-    Extract skill text from SKILLS section only.
-    Convert them into two lists:
-      - resume_skill_list
-      - jd_skill_list
-    And print both lists in the terminal.
-    No matching, no missing logic.
-    """
 
     def get_skill_text(chunks):
         for c in chunks:
@@ -240,10 +226,6 @@ Your Task:
 
 
 def compare_skill_lists_pure(resume_skill_list, jd_skill_list):
-    """
-    Pure algorithmic skill comparison.
-    NO LLM.
-    """
 
 
     def normalize(s: str):

@@ -125,9 +125,7 @@ def chunk_section_text(section_name: str, text: str) -> List[str]:
 
 
 def get_embeddings_and_store(resume_text: str, jd_text: str):
-    print("\n--------------------------------")
-    print("📦 Building NEW Chroma DB (optimized with Achievements + strict Experience)")
-    print("--------------------------------")
+   
 
     resume_clean = basic_clean(resume_text)
     jd_clean = basic_clean(jd_text)
@@ -152,8 +150,7 @@ def get_embeddings_and_store(resume_text: str, jd_text: str):
                 (ch, {"doc_type": "jd", "section": section_name, "chunk_id": i})
             )
 
-    print(f"🧩 Resume chunks: {len(resume_chunks_with_meta)}")
-    print(f"🧩 JD chunks: {len(jd_chunks_with_meta)}")
+   
 
     embedder = HuggingFaceEmbeddings(model_name=EMBED_MODEL)
 
