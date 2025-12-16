@@ -224,7 +224,7 @@ Your Task:
 1. Identify which skills or requirements in the JD_CONTEXT are NOT clearly present in RESUME_CONTEXT.
 2. Briefly explain why those missing skills/requirements matter for this role.
 3. Highlight the candidate's strongest matching points from the resume.
-4. Suggest 2–3 concrete, actionable improvements (skills to learn, projects to add, how to rewrite resume).
+4. Suggest 2-3 concrete, actionable improvements (skills to learn, projects to add, how to rewrite resume).
 5. Keep the output in clear paragraphs and bullet points. Do NOT output JSON.
 """
 

@@ -4,6 +4,9 @@ from pydantic import BaseModel
 from groq import Groq
 import memory_db
 from hybrid_retrieval import hybrid_search
+from history_rewrite import rewrite_query
+from chat_retrieval import retrieve_context_for_chat
+
 
 router = APIRouter()
 
@@ -16,38 +19,6 @@ def get_client():
         raise RuntimeError("Missing GROQ_API_KEY")
     return Groq(api_key=api_key)
 
-def rewrite_query(history, user_input):
-    """
-    Converts ambiguous queries into explicit ones.
-    Example:
-      user: "improve that"
-      → "improve the machine learning classification project in the resume"
-    """
-    client = get_client()
-
- 
-    convo = "\n".join([f"{m['role']}: {m['content']}" for m in history[-6:]])
-
-    prompt = f"""
-Rewrite the user's message into a clear, stand-alone search query.
-Use the conversation history to resolve pronouns or vague references.
-
-Conversation History:
-{convo}
-
-User message:
-{user_input}
-
-Return ONLY the rewritten query. No explanations. No formatting.
-"""
-
-    resp = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
-        messages=[{"role": "user", "content": prompt}],
-        max_tokens=60,
-        temperature=0.2,
-    )
-    return resp.choices[0].message.content.strip()
 
 
 class ChatRequest(BaseModel):
@@ -65,35 +36,14 @@ async def chat(req: ChatRequest):
     rewritten = rewrite_query(CHAT_HISTORY, user_msg)
 
 
-    resume_db = memory_db.resume_db
-    jd_db = memory_db.jd_db
+    retrieval = retrieve_context_for_chat(rewritten, k=3)
 
-    resume_chunks = []
-    jd_chunks = []
+    resume_text = retrieval["resume_context"]
+    jd_text = retrieval["jd_context"]
 
-    if resume_db:
-        resume_chunks = hybrid_search(
-            search_query=rewritten,
-            db=resume_db,
-            top_k=3,
-            use_rerank=True,
-        )
+    resume_chunks = resume_text
+    jd_chunks = jd_text
 
-    if jd_db:
-        jd_chunks = hybrid_search(
-            search_query=rewritten,
-            db=jd_db,
-            top_k=3,
-            use_rerank=True,
-        )
-
-
-    resume_text = "\n".join(
-        [c["text"] if isinstance(c, dict) else str(c) for c in resume_chunks]
-    )
-    jd_text = "\n".join(
-        [c["text"] if isinstance(c, dict) else str(c) for c in jd_chunks]
-    )
 
 
     prompt = f"""
@@ -136,6 +86,6 @@ JD Context:
     return {
         "answer": answer,
         "rewritten_query": rewritten,
-        "used_resume_context": resume_chunks,
-        "used_jd_context": jd_chunks,
+        "resume_retrieved_chunks": retrieval.get("resume_chunks", []),
+        "jd_retrieved_chunks": retrieval.get("jd_chunks", []),
     }

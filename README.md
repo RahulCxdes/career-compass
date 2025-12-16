@@ -29,7 +29,7 @@ The final retrieved context is then used to:
 
 ## 🏗️ System Architecture
 
-<img src="docs/Architecture.png" alt="Career Compass RAG Architecture" width="400"/>
+<img src="docs/rag_flow.diagram().png" alt="Career Compass RAG Architecture" width="400"/>
 
 ---
 

@@ -1,50 +1,53 @@
-# chat_retrieval.py
-from typing import Dict, List
+from typing import Dict
 
 import memory_db
 from intent_detection import QueryTarget, target_for_retrieval
-
 from query_expansion import expand_query
 from hybrid_retrieval import hybrid_search
 
 
-def _docs_to_text(docs: List[str]) -> str:
-    return "\n\n---\n\n".join(docs)
+def _docs_to_text(docs) -> str:
+    return "\n\n---\n\n".join(
+        d["text"] if isinstance(d, dict) else str(d)
+        for d in docs
+    )
 
 
-def retrieve_context_for_chat(query: str, k: int = 3) -> Dict[str, str]:
+def retrieve_context_for_chat(query: str, k: int = 3) -> Dict[str, object]:
     """
-    Retrieve resume/JD context for chat using:
-      - LLM query expansion
-      - Hybrid retrieval (BM25 + embeddings)
-      - Cross-encoder reranking
+    Retrieve resume / JD context for chat using:
+    - query expansion
+    - hybrid retrieval (BM25 + vectors)
+    - reranking
     """
-
 
     expanded_query = expand_query(query)
-
-
     target = target_for_retrieval(query)
 
     resume_context = ""
     jd_context = ""
 
+    resume_chunks = []
+    jd_chunks = []
+
+    # Resume retrieval
     if target in (QueryTarget.RESUME, QueryTarget.BOTH):
         if getattr(memory_db, "resume_db", None):
-            best_docs = hybrid_search(
+            resume_chunks = hybrid_search(
                 search_query=expanded_query,
                 db=memory_db.resume_db,
                 top_k=k,
                 bm25_k=20,
                 vec_k=20,
                 use_rerank=True,
-                section_filter=None,  # for now use all sections
+                section_filter=None,
             )
-            resume_context = _docs_to_text(best_docs)
+            resume_context = _docs_to_text(resume_chunks)
 
+    # JD retrieval
     if target in (QueryTarget.JD, QueryTarget.BOTH):
         if getattr(memory_db, "jd_db", None):
-            best_docs = hybrid_search(
+            jd_chunks = hybrid_search(
                 search_query=expanded_query,
                 db=memory_db.jd_db,
                 top_k=k,
@@ -53,10 +56,12 @@ def retrieve_context_for_chat(query: str, k: int = 3) -> Dict[str, str]:
                 use_rerank=True,
                 section_filter=None,
             )
-            jd_context = _docs_to_text(best_docs)
+            jd_context = _docs_to_text(jd_chunks)
 
     return {
         "target": target.value,
         "resume_context": resume_context,
         "jd_context": jd_context,
+        "resume_chunks": resume_chunks,
+        "jd_chunks": jd_chunks,
     }

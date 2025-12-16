@@ -1,58 +1,69 @@
-
 from enum import Enum
-from typing import Literal
+from groq import Groq
+import os
 
 
 class QueryTarget(str, Enum):
     RESUME = "resume"
     JD = "jd"
     BOTH = "both"
-    UNKNOWN = "unknown"
 
 
-RESUME_KEYWORDS = [
-    "my resume", "resume", "cv", "profile", "improve my", "fix my",
-    "update resume", "improve summary", "improve my summary",
-]
-
-JD_KEYWORDS = [
-    "jd", "job description", "job role", "backend role", "frontend role",
-    "am i ready for", "requirements for", "skills for",
-]
-
-BOTH_KEYWORDS = [
-    "compare", "match", "difference", "gap", "missing",
-    "skills i lack", "what am i missing",
-]
-
-
-def detect_query_target(query: str) -> QueryTarget:
-    """Classify the user query as resume / jd / both / unknown."""
-    q = query.lower()
-
-    if any(kw in q for kw in BOTH_KEYWORDS):
-        return QueryTarget.BOTH
-
-    resume_hit = any(kw in q for kw in RESUME_KEYWORDS)
-    jd_hit = any(kw in q for kw in JD_KEYWORDS)
-
-    if resume_hit and jd_hit:
-        return QueryTarget.BOTH
-    if resume_hit:
-        return QueryTarget.RESUME
-    if jd_hit:
-        return QueryTarget.JD
-
-    return QueryTarget.UNKNOWN
+def _get_groq_client() -> Groq:
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        raise RuntimeError("GROQ_API_KEY not set")
+    return Groq(api_key=api_key)
 
 
 def target_for_retrieval(query: str) -> QueryTarget:
     """
-    Apply your rule:
-      - classify with detect_query_target
-      - if UNKNOWN → default to RESUME for retrieval
+    LLM-based intent detection.
+    Decides whether to retrieve:
+    - resume only
+    - jd only
+    - both
     """
-    target = detect_query_target(query)
-    if target == QueryTarget.UNKNOWN:
+
+    client = _get_groq_client()
+
+    prompt = f"""
+You are an intent classifier inside a RAG system.
+
+Decide which context is required to answer the user's query.
+
+STRICT RULES:
+- If the query asks about the user's readiness, suitability, strengths,
+  or background in a GENERAL sense (e.g., "am I ready for frontend roles"),
+  WITHOUT asking about requirements or comparison → resume
+- If the query asks what is required, expected, or needed for a role → jd
+- If the query explicitly asks about:
+  • missing skills
+  • gaps
+  • comparison
+  • readiness for THIS job
+  → both
+
+User query:
+"{query}"
+
+Answer with ONLY one word:
+resume
+jd
+both
+"""
+
+    resp = client.chat.completions.create(
+        model="llama-3.1-8b-instant",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.0,
+        max_tokens=5,
+    )
+
+    decision = resp.choices[0].message.content.strip().lower()
+
+    if decision == "resume":
         return QueryTarget.RESUME
-    return target
+    if decision == "jd":
+        return QueryTarget.JD
+    return QueryTarget.BOTH
